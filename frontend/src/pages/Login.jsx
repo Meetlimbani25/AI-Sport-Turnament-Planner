@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Trophy, Sparkles, CalendarDays, BookOpen, KeyRound } from 'lucide-react';
+import { Trophy, Sparkles, CalendarDays, BookOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errMsg } from '../services/api';
 import { Button, inp } from '../components/ui';
 
 export default function Login() {
   const { user, login, register } = useAuth();
-  console.log('[DEBUG] Login component rendering, user is:', user);
   const [reg, setReg] = useState(false);
-  const [f, setF] = useState({ name: '', email: 'demo@planner.com', password: 'demo1234' });
+  const [f, setF] = useState({ name: '', email: '', password: '' });
   const [err, setErr] = useState();
   const [busy, setBusy] = useState(false);
 
@@ -30,12 +29,6 @@ export default function Login() {
   };
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-
-  const fillDemo = () => {
-    setReg(false);
-    setF({ name: '', email: 'demo@planner.com', password: 'demo1234' });
-    setErr();
-  };
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -71,11 +64,7 @@ export default function Login() {
           </ul>
         </div>
 
-        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-200">Default Demo Credentials</p>
-          <p className="mt-1 text-sm font-medium text-white">Email: <span className="font-mono text-indigo-200">demo@planner.com</span></p>
-          <p className="text-sm font-medium text-white">Password: <span className="font-mono text-indigo-200">demo1234</span></p>
-        </div>
+
       </div>
 
       {/* Auth Form Container */}
@@ -140,16 +129,7 @@ export default function Login() {
               {busy ? 'Please wait...' : reg ? 'Create Account' : 'Sign In'}
             </Button>
 
-            {!reg && (
-              <button
-                type="button"
-                onClick={fillDemo}
-                className="w-full flex items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50/50 py-2 text-xs font-medium text-indigo-700 hover:bg-indigo-100/70 transition"
-              >
-                <KeyRound size={14} />
-                Auto-fill Demo Credentials
-              </button>
-            )}
+
           </form>
 
           <div className="pt-2 text-center text-sm text-slate-500 border-t border-slate-100">
