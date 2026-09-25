@@ -1,0 +1,24 @@
+import {useEffect,useState,useMemo} from 'react';import {Plus,Search,Pencil,Trash2} from 'lucide-react';import api,{errMsg} from '../services/api';import {Card,Button,Modal,Skeleton,Empty,inp,cx,useToast} from './ui';
+export default function CrudPage({title,noun,path,cols,fields,alt}){
+const toast=useToast(),[rows,setRows]=useState(),[err,setErr]=useState(),[q,setQ]=useState(''),[form,setForm]=useState(),[del,setDel]=useState(),[refs,setRefs]=useState({}),[view,setView]=useState('table'),[busy,setBusy]=useState(false);
+const load=()=>api.get(path).then(r=>setRows(r.data)).catch(e=>setErr(errMsg(e)));
+useEffect(()=>{load();fields.filter(f=>f.ref).forEach(f=>api.get(f.ref).then(r=>setRefs(o=>({...o,[f.key]:r.data}))))},[path]);
+const shown=useMemo(()=>rows?.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase())),[rows,q]);
+const set=k=>e=>setForm(o=>({...o,[k]:e.target.value}));
+const save=async e=>{e.preventDefault();setBusy(true);try{const b={...form};fields.forEach(f=>{if(f.type==='number'&&b[f.key]!==''&&b[f.key]!=null)b[f.key]=Number(b[f.key])});
+form.id?await api.put(`${path}/${form.id}`,b):await api.post(path,b);toast(form.id?`${noun} updated`:`${noun} created`);setForm();load()}catch(e){toast(errMsg(e),'err')}setBusy(false)};
+const remove=async()=>{try{await api.delete(`${path}/${del.id}`);toast(`${noun} deleted`);setDel();load()}catch(e){toast(errMsg(e),'err')}};
+return <div className="space-y-5">
+<div className="flex flex-wrap items-center gap-3"><div className="relative min-w-[200px] flex-1"><Search size={16} className="absolute left-3 top-3 text-slate-400"/><input className={cx(inp,'pl-9')} placeholder={`Search ${title.toLowerCase()}`} value={q} onChange={e=>setQ(e.target.value)}/></div>
+{alt&&<div className="flex rounded-lg border border-slate-200 bg-white p-1 text-sm">{['table',alt.key].map(v=><button key={v} onClick={()=>setView(v)} className={cx('rounded-md px-3 py-1 capitalize transition',view===v?'bg-indigo-600 text-white':'text-slate-600 hover:bg-slate-50')}>{v}</button>)}</div>}
+<Button onClick={()=>setForm({})}><Plus size={16}/>Add {noun.toLowerCase()}</Button></div>
+{err?<Empty text="Could not load data" sub={err}/>:!rows?<Card className="space-y-3 p-4">{[1,2,3,4].map(i=><Skeleton key={i}/>)}</Card>:!shown.length?<Empty text={`No ${title.toLowerCase()} found`} sub={q?'Try a different search.':`Add your first ${noun.toLowerCase()} to get started.`}/>:view!=='table'?alt.render(shown):
+<Card className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500"><tr>{cols.map(c=><th key={c.key} className="px-4 py-3">{c.label}</th>)}<th/></tr></thead>
+<tbody className="divide-y divide-slate-100">{shown.map(r=><tr key={r.id} className="transition hover:bg-slate-50">{cols.map(c=><td key={c.key} className="whitespace-nowrap px-4 py-3">{c.render?c.render(r):r[c.key]??'-'}</td>)}
+<td className="whitespace-nowrap px-4 py-3 text-right"><button aria-label="Edit" onClick={()=>setForm(r)} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600"><Pencil size={16}/></button><button aria-label="Delete" onClick={()=>setDel(r)} className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={16}/></button></td></tr>)}</tbody></table></Card>}
+{form&&<Modal title={`${form.id?'Edit':'Add'} ${noun.toLowerCase()}`} onClose={()=>setForm()}><form onSubmit={save} className="grid grid-cols-1 gap-4 sm:grid-cols-2">{fields.map(f=><label key={f.key} className={cx('text-sm font-medium text-slate-700',f.wide&&'sm:col-span-2')}>{f.label}
+{f.options||f.ref?<select className={cx(inp,'mt-1')} required={f.req} value={form[f.key]??''} onChange={set(f.key)}><option value="">Select</option>{(f.options||refs[f.key]||[]).map(o=>typeof o==='string'?<option key={o}>{o}</option>:<option key={o.id} value={o[f.valueKey||'id']}>{o.name}</option>)}</select>
+:f.type==='textarea'?<textarea rows={3} className={cx(inp,'mt-1')} value={form[f.key]??''} onChange={set(f.key)}/>:<input type={f.type||'text'} required={f.req} className={cx(inp,'mt-1')} value={form[f.key]??''} onChange={set(f.key)}/>}</label>)}
+<div className="flex justify-end gap-2 sm:col-span-2"><Button type="button" variant="ghost" onClick={()=>setForm()}>Cancel</Button><Button disabled={busy}>{busy?'Saving':'Save changes'}</Button></div></form></Modal>}
+{del&&<Modal title={`Delete ${noun.toLowerCase()}?`} onClose={()=>setDel()}><p className="text-sm text-slate-600">This permanently removes "{del.name||del.round}" and cannot be undone.</p><div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={()=>setDel()}>Cancel</Button><Button variant="danger" onClick={remove}>Delete {noun.toLowerCase()}</Button></div></Modal>}
+</div>}

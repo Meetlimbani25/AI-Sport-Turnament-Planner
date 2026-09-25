@@ -1,0 +1,5 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+body{@apply bg-slate-50 font-sans text-slate-800 antialiased}
+@keyframes pop{from{opacity:0;transform:scale(.97)}}
+.pop{animation:pop .15s ease-out}
+@media (prefers-reduced-motion:reduce){.pop{animation:none}}

@@ -1,0 +1,7 @@
+import {z} from 'zod';import {retrieve} from './ragService.js';import mock from './providers/mock.js';import openai from './providers/openai.js';
+export const Plan=z.object({tournamentName:z.string(),format:z.string(),summary:z.string(),rules:z.array(z.string()),matches:z.array(z.object({round:z.string(),team1:z.string(),team2:z.string(),date:z.string(),time:z.string(),venue:z.string(),ground:z.string()})),recommendations:z.array(z.string())});
+const providers={mock,openai}; // add {openai, anthropic, ...} here: each exposes plan(prompt,input) and chat(message,context)
+const provider=()=>providers[process.env.AI_PROVIDER||'mock']||(()=>{throw Object.assign(new Error('Unknown AI_PROVIDER'),{status:501})})();
+export const buildPrompt=(i,ctx)=>[`Create a ${i.format} ${i.sport} tournament plan for ${i.teams} teams.`,`Dates: ${i.startDate} to ${i.endDate||'flexible'}; ${i.grounds} ground(s); ${i.matchDuration} min matches + ${i.restTime} min rest; venue: ${i.venue||'n/a'}.`,`Special requirements: ${i.special||'none'}`,`Reference rules:\n${ctx.join('\n')||'none'}`,'Reply with JSON only: {tournamentName,format,summary,rules[],matches[{round,team1,team2,date,time,venue,ground}],recommendations[]}'].join('\n');
+export async function generatePlan(input){const ctx=await retrieve(input.special||input.sport,input.sport),raw=await provider().plan(buildPrompt(input,ctx),input);return Plan.parse(typeof raw==='string'?JSON.parse(raw):raw)}
+export const chat=async msg=>provider().chat(msg,await retrieve(msg));

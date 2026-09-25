@@ -1,0 +1,11 @@
+import {DataTypes as T} from 'sequelize';import db from '../config/db.js';
+const def=(n,t,f)=>db.define(n,f,{tableName:t,underscored:true});
+export const User=def('User','users',{name:T.STRING,email:{type:T.STRING,unique:true,allowNull:false},password:{type:T.STRING,allowNull:false}});
+export const Tournament=def('Tournament','tournaments',{name:{type:T.STRING,allowNull:false},sport:T.STRING,format:T.STRING,numTeams:T.INTEGER,startDate:T.DATEONLY,endDate:T.DATEONLY,venue:T.STRING,grounds:{type:T.INTEGER,defaultValue:1},matchDuration:T.INTEGER,restTime:T.INTEGER,description:T.TEXT,status:{type:T.STRING,defaultValue:'Draft'},rules:T.JSON});
+export const Team=def('Team','teams',{name:{type:T.STRING,allowNull:false},sport:T.STRING,captain:T.STRING,coach:T.STRING,status:{type:T.STRING,defaultValue:'Active'}});
+export const Player=def('Player','players',{name:{type:T.STRING,allowNull:false},age:T.INTEGER,jersey:T.INTEGER,position:T.STRING,contact:T.STRING,status:{type:T.STRING,defaultValue:'Active'}});
+export const Match=def('Match','matches',{round:{type:T.STRING,allowNull:false},team1:T.STRING,team2:T.STRING,venue:T.STRING,date:T.DATEONLY,time:T.STRING(5),ground:T.STRING,status:{type:T.STRING,defaultValue:'Scheduled'},result:T.STRING});
+export const AiGeneration=def('AiGeneration','ai_generations',{type:T.STRING,prompt:T.TEXT,response:T.JSON,status:T.STRING});
+export const Document=def('Document','documents',{name:{type:T.STRING,allowNull:false},sport:T.STRING,category:T.STRING,path:T.STRING,status:{type:T.STRING,defaultValue:'Pending'}});
+Team.hasMany(Player,{foreignKey:'teamId',onDelete:'CASCADE'});Player.belongsTo(Team,{foreignKey:'teamId'});
+Tournament.hasMany(Match,{foreignKey:'tournamentId',onDelete:'CASCADE'});Match.belongsTo(Tournament,{foreignKey:'tournamentId'});

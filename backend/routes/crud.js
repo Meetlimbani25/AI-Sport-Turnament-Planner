@@ -1,0 +1,15 @@
+import {Router} from 'express';import {z} from 'zod';import {Tournament,Team,Player,Match} from '../models/index.js';import {w} from '../middleware/auth.js';
+const clean=b=>Object.fromEntries(Object.entries(b).filter(([k])=>!['id','createdAt','updatedAt'].includes(k)).map(([k,v])=>[k,v===''?null:v]));
+const nf=s=>s.status(404).json({message:'Not found'});
+const crud=(M,req,include)=>{const r=Router(),sc=z.object({[req]:z.string().min(1)}).passthrough();
+r.get('/',w(async(q,s)=>s.json(await M.findAll({include,order:[['id','DESC']]}))));
+r.get('/:id',w(async(q,s)=>{const x=await M.findByPk(q.params.id,{include});x?s.json(x):nf(s)}));
+r.post('/',w(async(q,s)=>s.status(201).json(await M.create(clean(sc.parse(q.body))))));
+r.put('/:id',w(async(q,s)=>{const x=await M.findByPk(q.params.id);if(!x)return nf(s);await x.update(clean(sc.partial().parse(q.body)));s.json(x)}));
+r.delete('/:id',w(async(q,s)=>(await M.destroy({where:{id:q.params.id}}))?s.json({ok:true}):nf(s)));
+return r};
+const r=Router();
+r.use('/tournaments',crud(Tournament,'name'));r.use('/teams',crud(Team,'name'));
+r.use('/players',crud(Player,'name',[{model:Team,attributes:['name']}]));
+r.use('/matches',crud(Match,'round',[{model:Tournament,attributes:['name']}]));
+export default r;
