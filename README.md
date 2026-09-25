@@ -103,33 +103,6 @@ npm run dev
 
 ---
 
-### 🔑 Demo Login Credentials
-
-Once the seed script has completed, log in with the following default admin account:
-
-* **Email:** `demo@planner.com`
-* **Password:** `demo1234`
-
----
-
-## ⚙️ Environment Configuration
-
-Backend environment settings are configured in `backend/.env`:
-
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `PORT` | `5000` | Backend API Server Port |
-| `DB_HOST` | `localhost` | MySQL Database Host |
-| `DB_PORT` | `3306` | MySQL Port |
-| `DB_NAME` | `sports_planner` | Database Name |
-| `DB_USER` | `root` | MySQL User |
-| `DB_PASS` | `""` | MySQL Password |
-| `JWT_SECRET` | `super_secret_jwt_key` | Secret key for JWT Token signing |
-| `AI_PROVIDER` | `mock` | AI Engine Mode (`mock` or `openai`) |
-| `AI_API_KEY` | `""` | OpenAI API Key (Required only if `AI_PROVIDER=openai`) |
-| `AI_MODEL` | `gpt-3.5-turbo` | OpenAI Model choice |
-
----
 
 ## 🧠 LLM & RAG Configuration
 
